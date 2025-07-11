@@ -6,7 +6,7 @@
 1. Visit: https://dev.mysql.com/downloads/installer/
 2. Download "MySQL Installer for Windows" (mysql-installer-web-community-8.x.x.msi)
 3. Run the installer
-4. Choose "Developer Default" setup type
+4. Choose "Developer Default" or "Server Only" setup type
 5. Follow the installation wizard
 6. **Important**: Set a root password and remember it!
 
