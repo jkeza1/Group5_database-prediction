@@ -1,6 +1,10 @@
 
 -- Step 2: Teen Phone Addiction and Lifestyle Survey - MySQL Schema
 
+-- Create database
+CREATE DATABASE IF NOT EXISTS teen_phone_addiction_db;
+USE teen_phone_addiction_db;
+
 -- Table: Teens
 CREATE TABLE Teens (
     Teen_ID INT AUTO_INCREMENT PRIMARY KEY,
