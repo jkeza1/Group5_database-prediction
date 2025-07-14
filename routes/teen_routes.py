@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, status, Path
 from bson import ObjectId
 from models.teen import TeenModel, PhoneUsageModel, MentalHealthModel, AppUsageModel
 from motor.motor_asyncio import AsyncIOMotorClient
-from typing import Optional
+from typing import List, Optional
 
 # Initialize router
 router = APIRouter()
@@ -21,6 +21,177 @@ def validate_object_id(id: str):
     if not ObjectId.is_valid(id):
         raise HTTPException(status_code=400, detail="Invalid ObjectId")
     return ObjectId(id)
+
+
+# ----------------------------
+#       CREATE ENDPOINTS
+# ----------------------------
+
+@router.post("/teens", response_model=TeenModel, status_code=status.HTTP_201_CREATED)
+async def create_teen(teen: TeenModel):
+    """
+    Create a new Teen document.
+    """
+    # Serialize the incoming Pydantic model to dict
+    teen_data = teen.model_dump()  
+    result = await teens_collection.insert_one(teen_data)
+    
+    created = await teens_collection.find_one({"_id": result.inserted_id})
+    # Convert ObjectId to string ID
+    created["id"] = str(created["_id"])
+    del created["_id"]
+    return created
+
+
+@router.post("/phone-usage", response_model=PhoneUsageModel, status_code=status.HTTP_201_CREATED)
+async def create_phone_usage(usage: PhoneUsageModel):
+    """
+    Create a new PhoneUsage document.
+    """
+    usage_data = usage.model_dump()
+    result = await phone_usage_collection.insert_one(usage_data)
+    
+    created = await phone_usage_collection.find_one({"_id": result.inserted_id})
+    created["id"] = str(created["_id"])
+    created["teen_id"] = str(created["teen_id"])
+    del created["_id"]
+    return created
+
+
+@router.post("/mental-health", response_model=MentalHealthModel, status_code=status.HTTP_201_CREATED)
+async def create_mental_health(stats: MentalHealthModel):
+    """
+    Create a new MentalHealth document.
+    """
+    stats_data = stats.model_dump()
+    result = await mental_health_collection.insert_one(stats_data)
+    
+    created = await mental_health_collection.find_one({"_id": result.inserted_id})
+    created["id"] = str(created["_id"])
+    created["teen_id"] = str(created["teen_id"])
+    del created["_id"]
+    return created
+
+
+@router.post("/app-usage", response_model=AppUsageModel, status_code=status.HTTP_201_CREATED)
+async def create_app_usage(app: AppUsageModel):
+    """
+    Create a new AppUsage document.
+    """
+    app_data = app.model_dump()
+    result = await app_usage_collection.insert_one(app_data)
+    
+    created = await app_usage_collection.find_one({"_id": result.inserted_id})
+    created["id"] = str(created["_id"])
+    created["teen_id"] = str(created["teen_id"])
+    del created["_id"]
+    return created
+
+
+
+# ----------------------------
+#        READ ENDPOINTS
+# ----------------------------
+
+@router.get("/teens", response_model=List[TeenModel])
+async def list_teens():
+    """
+    Retrieve all Teen documents.
+    """
+    docs = []
+    cursor = teens_collection.find({})
+    async for doc in cursor:
+        doc["id"] = str(doc["_id"])
+        del doc["_id"]
+        docs.append(doc)
+    return docs
+
+
+@router.get("/teens/{id}", response_model=TeenModel)
+async def get_teen(id: str = Path(..., description="MongoDB ObjectId of the Teen document")):
+    """
+    Retrieve a single Teen by its ObjectId.
+    """
+    oid = validate_object_id(id)
+    doc = await teens_collection.find_one({"_id": oid})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Teen not found")
+    doc["id"] = str(doc["_id"])
+    del doc["_id"]
+    return doc
+
+
+@router.get("/phone-usage", response_model=List[PhoneUsageModel])
+async def list_phone_usage():
+    docs = []
+    cursor = phone_usage_collection.find({})
+    async for doc in cursor:
+        doc["id"] = str(doc["_id"])
+        doc["teen_id"] = str(doc["teen_id"])
+        del doc["_id"]
+        docs.append(doc)
+    return docs
+
+
+@router.get("/phone-usage/{id}", response_model=PhoneUsageModel)
+async def get_phone_usage(id: str):
+    oid = validate_object_id(id)
+    doc = await phone_usage_collection.find_one({"_id": oid})
+    if not doc:
+        raise HTTPException(status_code=404, detail="PhoneUsage not found")
+    doc["id"] = str(doc["_id"])
+    doc["teen_id"] = str(doc["teen_id"])
+    del doc["_id"]
+    return doc
+
+
+@router.get("/mental-health", response_model=List[MentalHealthModel])
+async def list_mental_health():
+    docs = []
+    cursor = mental_health_collection.find({})
+    async for doc in cursor:
+        doc["id"] = str(doc["_id"])
+        doc["teen_id"] = str(doc["teen_id"])
+        del doc["_id"]
+        docs.append(doc)
+    return docs
+
+
+@router.get("/mental-health/{id}", response_model=MentalHealthModel)
+async def get_mental_health(id: str):
+    oid = validate_object_id(id)
+    doc = await mental_health_collection.find_one({"_id": oid})
+    if not doc:
+        raise HTTPException(status_code=404, detail="MentalHealth not found")
+    doc["id"] = str(doc["_id"])
+    doc["teen_id"] = str(doc["teen_id"])
+    del doc["_id"]
+    return doc
+
+
+@router.get("/app-usage", response_model=List[AppUsageModel])
+async def list_app_usage():
+    docs = []
+    cursor = app_usage_collection.find({})
+    async for doc in cursor:
+        doc["id"] = str(doc["_id"])
+        doc["teen_id"] = str(doc["teen_id"])
+        del doc["_id"]
+        docs.append(doc)
+    return docs
+
+
+@router.get("/app-usage/{id}", response_model=AppUsageModel)
+async def get_app_usage(id: str):
+    oid = validate_object_id(id)
+    doc = await app_usage_collection.find_one({"_id": oid})
+    if not doc:
+        raise HTTPException(status_code=404, detail="AppUsage not found")
+    doc["id"] = str(doc["_id"])
+    doc["teen_id"] = str(doc["teen_id"])
+    del doc["_id"]
+    return doc
+
 
 # ----------------------------
 #         UPDATE ENDPOINTS
