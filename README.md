@@ -14,7 +14,7 @@ The goal is to provide accurate predictions of addiction levels to aid intervent
 
 ### Database Design and Implementation
 
-- Developed a relational database schema with three or more tables, including primary and foreign keys.
+- Developed a relational database schema with three tables, including primary and foreign keys.
 - Created an Entity-Relationship Diagram (ERD) to illustrate database relationships.
 - Implemented the schema in MongoDB collections to support NoSQL storage.
 - Developed stored procedures and triggers in the relational database to automate validation and logging.
